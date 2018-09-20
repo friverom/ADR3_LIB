@@ -18,6 +18,8 @@ import java.util.logging.Logger;
  */
 public class RPI_IO {
     
+    private int flags=0;
+    private double[] setpoints = new double[8];
     private DS1307 rtc = null;
     private LTC2309 adc = null;
     private MCP23017 gpio = null;
@@ -30,6 +32,10 @@ public class RPI_IO {
             rtc = new DS1307(i2c);
             gpio = new MCP23017(i2c);
             adc = new LTC2309(i2c);
+            
+            for(int i=0;i<8;i++){
+                setpoints[i]=0.0;
+            }
                         
         } catch (I2CFactory.UnsupportedBusNumberException ex) {
             System.out.println("I2C Error. RPI_IO board not active");
@@ -205,6 +211,58 @@ public class RPI_IO {
     
     public void setCalendarRTC(Calendar d) {
         rtc.setCalendarRTC(d);
+    }
+    
+    public int getFlags(){
+        return flags;
+    }
+    
+    public boolean getFlag(int flag){
+        if((getBit(flag)&flags)==0){
+            return false;
+        } else {
+            return true;
+        }
+                
+    }
+    
+    public void setFlags(int flags){
+        this.flags=flags;
+    }
+    
+    public void setFlag(int flag){
+        flags=getBit(flag)|flags;
+    }
+    
+    public void resetFlag(int flag){
+        flags=~getBit(flag)&flags;
+    }
+    
+    public double[] getSetpoints(){
+        return setpoints;
+    }
+    
+    public double getSetpoint(int setpoint) {
+        if (setpoint > 0 && setpoint < 9) {
+            return setpoints[setpoint - 1];
+        } else {
+            return 0.0;
+        }
+    }
+    
+    public void setSetpoint(int setpoint, double value){
+        if(setpoint>0 && setpoint<9){
+            setpoints[setpoint-1]=value;
+        }    
+    }
+    private int getBit(int rly){
+        
+        if(rly==1){
+            return 1;
+        } else {
+            return 1<<(rly-1);
+        }
+        
     }
     
     
